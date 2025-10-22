@@ -2,12 +2,9 @@ package client
 
 import "net/http"
 
-type AsyncResult struct {
-	Resp *http.Response
-	Err  error
-}
+type Callback func(*http.Response, error)
 
 type request struct {
-	req        *http.Request
-	resultChan chan<- AsyncResult
+	req *http.Request
+	cb  Callback
 }
