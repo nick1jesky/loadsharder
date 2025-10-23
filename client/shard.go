@@ -3,6 +3,7 @@ package client
 import (
 	"net/http"
 	"sync"
+	"sync/atomic"
 
 	"github.com/nick1jesky/atlimiter"
 )
@@ -12,8 +13,11 @@ type shard struct {
 
 	limiter *atlimiter.ATLimiter
 
-	opts     Options
-	queue    chan *request
+	opts  Options
+	queue chan *request
+
+	queueLen atomic.Int32
+
 	workers  []*worker
 	stopChan chan struct{}
 	mu       sync.Mutex
@@ -107,6 +111,7 @@ func (s *shard) start(wg *sync.WaitGroup) {
 func (s *shard) submit(req *http.Request, cb Callback) error {
 	select {
 	case s.queue <- &request{req: req, cb: cb}:
+		s.queueLen.Add(1)
 		return nil
 	case <-s.stopChan:
 		return ErrClientStopped

@@ -61,7 +61,7 @@ func NewClient(opts Options, metrics metric.Metrics) (*Client, error) {
 	return &Client{
 		opts:      opts,
 		limiter:   atlimiter.NewLimiter(opts.MaxRPS, opts.CapacityFactor),
-		selector:  NewRoundRobinSelector(),
+		selector:  NewRoundRobinSelector(opts.QueueSizePerShard),
 		startOnce: sync.Once{},
 		stopOnce:  sync.Once{},
 		metrics:   metrics,
@@ -79,7 +79,7 @@ func (c *Client) Start() {
 }
 
 func (c *Client) Add(req *http.Request, cb Callback) {
-	shardID := c.selector.SelectShard()
+	shardID := c.selector.SelectShard(c.shards)
 	err := c.shards[shardID].submit(req, cb)
 	if err != nil {
 		cb(nil, err)

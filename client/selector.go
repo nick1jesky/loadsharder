@@ -1,27 +1,34 @@
 package client
 
-import "sync/atomic"
-
 type ShardSelector interface {
-	SelectShard() int
+	SelectShard(sh []*shard) int
 }
 
 type RoundRobinSelector struct {
-	counter uint64
-	shards  int
+	maxQueueLen int
 }
 
-func NewRoundRobinSelector() *RoundRobinSelector {
-	return &RoundRobinSelector{}
+func NewRoundRobinSelector(maxQueueLen int) *RoundRobinSelector {
+	return &RoundRobinSelector{
+		maxQueueLen: maxQueueLen,
+	}
 }
 
-func (s *RoundRobinSelector) SetShardCount(count int) {
-	s.shards = count
-}
-
-func (s *RoundRobinSelector) SelectShard() int {
-	if s.shards == 0 {
+func (s *RoundRobinSelector) SelectShard(sh []*shard) int {
+	if sh == nil {
 		return 0
 	}
-	return int(atomic.AddUint64(&s.counter, 1) % uint64(s.shards))
+
+	min := s.maxQueueLen
+	minIdx := 0
+
+	for itt, j := range sh {
+		tmp := int(j.queueLen.Load())
+		if tmp <= min {
+			min = tmp
+			minIdx = itt
+		}
+	}
+
+	return minIdx
 }
