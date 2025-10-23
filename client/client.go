@@ -73,7 +73,7 @@ func (c *Client) Start() {
 		c.shards = make([]*shard, c.opts.ShardCount)
 		for i := range c.opts.ShardCount {
 			c.shards[i] = newShard(i, c.opts, c.limiter)
-			c.shards[i].start(&sync.WaitGroup{})
+			c.shards[i].start(&c.wg)
 		}
 	})
 }
@@ -94,3 +94,4 @@ func (c *Client) Stop() {
 		c.wg.Wait()
 	})
 }
+
