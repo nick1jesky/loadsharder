@@ -1,7 +1,7 @@
 package client
 
 import (
-	"loadsharder/metric"
+	"loadsharder/stats"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -38,7 +38,7 @@ func TestClientBaseFunctionality(t *testing.T) {
 	t.Run("New client", func(t *testing.T) {
 		client, err := NewClient(
 			options,
-			&metric.EmptyMetrics{},
+			&stats.EmptyMetrics{},
 		)
 		if err != nil {
 			t.Fatalf("Got error: %s", err)
@@ -49,7 +49,7 @@ func TestClientBaseFunctionality(t *testing.T) {
 
 		empty, err := NewClient(
 			Options{},
-			&metric.EmptyMetrics{},
+			&stats.EmptyMetrics{},
 		)
 
 		if err != ErrInvalidParam && empty != nil {
@@ -60,7 +60,7 @@ func TestClientBaseFunctionality(t *testing.T) {
 	t.Run("Base functionality", func(t *testing.T) {
 		client, _ := NewClient(
 			options,
-			&metric.EmptyMetrics{},
+			&stats.EmptyMetrics{},
 		)
 
 		var wg sync.WaitGroup
