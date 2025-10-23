@@ -1,7 +1,7 @@
 package client
 
 import (
-	"loadsharder/metric"
+	"loadsharder/stats"
 	"net/http"
 	"sync"
 	"time"
@@ -50,10 +50,10 @@ type Client struct {
 	stopOnce  sync.Once
 	wg        sync.WaitGroup
 
-	metrics metric.Metrics
+	metrics stats.Metrics
 }
 
-func NewClient(opts Options, metrics metric.Metrics) (*Client, error) {
+func NewClient(opts Options, metrics stats.Metrics) (*Client, error) {
 	if opts.isZero() {
 		return nil, ErrInvalidParam
 	}
@@ -94,4 +94,3 @@ func (c *Client) Stop() {
 		c.wg.Wait()
 	})
 }
-
