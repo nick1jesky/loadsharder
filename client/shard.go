@@ -40,7 +40,7 @@ func (s *shard) addWorkers(count int) {
 	defer s.mu.Unlock()
 
 	for range count {
-		worker := newWorker(s.opts.Client, s.limiter)
+		worker := newWorker(s)
 		s.workers = append(s.workers, worker)
 	}
 }

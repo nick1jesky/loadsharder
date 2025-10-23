@@ -1,22 +1,13 @@
 package client
 
-import (
-	"net/http"
-	"time"
-
-	"github.com/nick1jesky/atlimiter"
-)
-
 type worker struct {
-	client   *http.Client
-	limiter  *atlimiter.ATLimiter
+	shardPtr *shard
 	stopChan chan struct{}
 }
 
-func newWorker(client *http.Client, limiter *atlimiter.ATLimiter) *worker {
+func newWorker(sh *shard) *worker {
 	return &worker{
-		client:   client,
-		limiter:  limiter,
+		shardPtr: sh,
 		stopChan: make(chan struct{}),
 	}
 }
@@ -39,13 +30,11 @@ func (w *worker) process(queue <-chan *request, shardStopChan <-chan struct{}) {
 
 func (w *worker) processRequest(req *request) {
 	for {
-		switch {
-		case w.limiter.Allow():
-			resp, err := w.client.Do(req.req)
+		if w.shardPtr.limiter.Allow() {
+			resp, err := w.shardPtr.opts.Client.Do(req.req)
 			req.cb(resp, err)
+			w.shardPtr.queueLen.Add(-1)
 			return
-		default:
-			time.Sleep(10 * time.Millisecond)
 		}
 	}
 }
